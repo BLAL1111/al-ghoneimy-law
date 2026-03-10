@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("LAWYER") // ADMIN, LAWYER, TRAINEE, STAFF
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdCases     Case[]    @relation("CreatedCases")
+  updatedCases     Case[]    @relation("UpdatedCases")
+  createdClients   Client[]  @relation("CreatedClients")
+  updatedClients   Client[]  @relation("UpdatedClients")
+  createdSessions  Session[] @relation("CreatedSessions")
+  updatedSessions  Session[] @relation("UpdatedSessions")
+  createdDocuments Document[] @relation("CreatedDocuments")
+  updatedDocuments Document[] @relation("UpdatedDocuments")
+  auditLogs        AuditLog[]
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  phone       String?
+  email       String?  @unique
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  updatedById String?
+  createdBy   User     @relation("CreatedClients", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedClients", fields: [updatedById], references: [id])
+  cases       Case[]
+}
+
+model Case {
+  id          String   @id @default(cuid())
+  caseNumber  String   @unique
+  court       String?
+  subject     String?
+  status      String   @default("OPEN") // OPEN, CLOSED
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  filedDate   DateTime?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  updatedById String?
+  createdBy   User     @relation("CreatedCases", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedCases", fields: [updatedById], references: [id])
+  sessions    Session[]
+  documents   Document[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id])
+  date      DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  updatedById String?
+  createdBy   User     @relation("CreatedSessions", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedSessions", fields: [updatedById], references: [id])
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id])
+  name      String
+  filePath  String
+  uploadedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  updatedById String?
+  createdBy   User     @relation("CreatedDocuments", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedDocuments", fields: [updatedById], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // CREATE, UPDATE, DELETE
+  entity    String   // Case, Client, Session, Document, User
+  entityId  String
+  changes   String?  // تخزين JSON كـ string
+  timestamp DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  @@index([userId])
+  @@index([entity])
+  @@index([timestamp])
+}
