@@ -1,7 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import { prisma } from '@/lib/prisma'  // ✅ ده اللي ناقص
+import { prisma } from '@/lib/prisma'
+import { createAuditLog } from '@/lib/audit'
+
+// ✅ دالة لحساب التغييرات بين القديم والجديد
+function getChanges(oldData: any, newData: any): string[] {
+  const changes: string[] = []
+  for (const key in newData) {
+    if (oldData[key] !== newData[key]) {
+      changes.push(`${key}: ${oldData[key]} → ${newData[key]}`)
+    }
+  }
+  return changes
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -14,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "GET") {
     const caseItem = await prisma.case.findUnique({
       where: { id },
-      include: { 
+      include: {
         client: true,
         sessions: { orderBy: { date: 'desc' } },
         documents: true,
@@ -63,37 +75,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         )
       }
 
-      res.json(updated)
+      return res.json(updated)
     } catch (error: any) {
       if (error.code === 'P2002') {
         return res.status(400).json({ error: 'رقم القضية موجود بالفعل' })
       }
       console.error(error)
-      res.status(500).json({ error: 'حدث خطأ' })
+      return res.status(500).json({ error: 'حدث خطأ' })
     }
   }
 
-  // ... في نهاية الملف، في قسم DELETE
-else if (req.method === "DELETE") {
-  try {
-    // تسجيل عملية الحذف في سجل التغييرات
-    await createAuditLog(
-      session.user.id,
-      'DELETE',
-      'Case',
-      id,
-      null,
-      req
-    )
+  // DELETE: حذف القضية
+  else if (req.method === "DELETE") {
+    try {
+      // تسجيل عملية الحذف في سجل التغييرات
+      await createAuditLog(
+        session.user.id,
+        'DELETE',
+        'Case',
+        id,
+        null,
+        req
+      )
 
-    await prisma.case.delete({ where: { id } })
-    res.status(204).end()
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: 'حدث خطأ' })
+      await prisma.case.delete({ where: { id } })
+      return res.status(204).end()
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({ error: 'حدث خطأ' })
+    }
   }
-}
+
   else {
-    res.status(405).end()
+    return res.status(405).end()
   }
 }
