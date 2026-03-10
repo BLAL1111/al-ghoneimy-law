@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]' // ✅ نقطة واحدة
-import { createAuditLog, getChanges } from '@/lib/audit'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import { prisma } from '@/lib/prisma'  // ✅ ده اللي ناقص
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
