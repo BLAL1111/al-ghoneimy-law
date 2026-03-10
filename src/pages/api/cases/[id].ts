@@ -2,18 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { prisma } from '@/lib/prisma'
-import { createAuditLog } from '@/lib/audit'
+import { createAuditLog, getChanges } from '@/lib/audit'
 
-// ✅ دالة لحساب التغييرات بين القديم والجديد
-function getChanges(oldData: any, newData: any): string[] {
-  const changes: string[] = []
-  for (const key in newData) {
-    if (oldData[key] !== newData[key]) {
-      changes.push(`${key}: ${oldData[key]} → ${newData[key]}`)
-    }
-  }
-  return changes
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
