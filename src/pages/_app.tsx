@@ -181,7 +181,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     <>
       {/* ✅ أضف السطور دي */}
       <Head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </Head>
 
@@ -196,5 +196,4 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     </>
   )
 }
-
 export default MyApp
