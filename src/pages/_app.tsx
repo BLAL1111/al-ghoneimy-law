@@ -1,3 +1,4 @@
+import Head from 'next/head'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { SessionProvider, useSession } from "next-auth/react"
@@ -5,6 +6,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
+  
   HomeIcon, 
   BriefcaseIcon, 
   UsersIcon, 
@@ -174,17 +176,24 @@ function Layout({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
-
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <SessionProvider session={session}>
-      <ThemeProvider>
-        <Toaster position="top-left" reverseOrder={false} />
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </ThemeProvider>
-    </SessionProvider>
+    <>
+      {/* ✅ أضف السطور دي */}
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+      </Head>
+
+      <SessionProvider session={session}>
+        <ThemeProvider>
+          <Toaster position="top-left" reverseOrder={false} />
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </ThemeProvider>
+      </SessionProvider>
+    </>
   )
 }
 

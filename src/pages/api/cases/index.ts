@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]' // ✅ نقطة واحدة
+import { authOptions } from '../auth/[...nextauth]'
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit'
 
@@ -10,10 +10,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === "GET") {
     const cases = await prisma.case.findMany({
-      include: { client: true }
+      include: { client: true },
+      orderBy: { createdAt: 'desc' }
     })
-    res.json(cases)
-  } 
+    return res.json(cases)
+  }
+
   else if (req.method === "POST") {
     const { caseNumber, court, subject, clientId, filedDate, description } = req.body
     try {
@@ -30,26 +32,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         include: { client: true }
       })
 
-      // تسجيل عملية الإنشاء في سجل التغييرات
-      await createAuditLog(
-        session.user.id,
-        'CREATE',
-        'Case',
-        newCase.id,
-        null, // لا توجد تغييرات لأنها عملية إنشاء
-        req
-      )
+      await createAuditLog(session.user.id, 'CREATE', 'Case', newCase.id, null, req)
 
-      res.json(newCase)
+      return res.json(newCase)
     } catch (error: any) {
       if (error.code === 'P2002') {
         return res.status(400).json({ error: 'رقم القضية موجود بالفعل' })
       }
       console.error(error)
-      res.status(500).json({ error: 'حدث خطأ' })
+      return res.status(500).json({ error: 'حدث خطأ' })
     }
   }
+
   else {
-    res.status(405).end()
+    return res.status(405).end()
   }
 }
