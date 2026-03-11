@@ -9,6 +9,9 @@
     "postinstall": "prisma generate",
     "seed": "ts-node scripts/seed.ts"
   },
+  "prisma": {
+    "seed": "ts-node scripts/seed.ts"
+  },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
     "@capacitor/cli": "^8.2.0",
