@@ -37,7 +37,7 @@ const navigation = [
   { name: 'المستندات', href: '/documents', icon: DocumentTextIcon },
   { name: 'التقارير', href: '/reports', icon: ChartBarIcon },
   { name: 'مساعدة', href: '/help', icon: QuestionMarkCircleIcon },
-  { name: 'النظام المالي', href: '/finance', icon: BanknotesIcon, adminOnly: true },
+  { name: 'النظام المالي', href: '/finance', icon: BanknotesIcon, roles: ['ADMIN', 'ACCOUNTANT'] },
   { name: 'إدارة المستخدمين', href: '/admin/users', icon: UserGroupIcon, adminOnly: true },
 ]
 
@@ -54,9 +54,11 @@ function Layout({ children }: { children: React.ReactNode }) {
     await signOut({ redirect: true, callbackUrl: '/login' })
   }
 
-  const filteredNav = navigation.filter(item =>
-    !item.adminOnly || session?.user?.role === 'ADMIN'
-  )
+  const filteredNav = navigation.filter(item => {
+    if (item.roles) return item.roles.includes(session?.user?.role || '')
+    if (item.adminOnly) return session?.user?.role === 'ADMIN'
+    return true
+  })
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300" dir="rtl">

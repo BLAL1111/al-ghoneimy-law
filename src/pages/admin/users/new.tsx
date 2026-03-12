@@ -102,6 +102,9 @@ export default function NewUser() {
           >
             <option value="LAWYER">محامي</option>
             <option value="ADMIN">مدير</option>
+            <option value="ACCOUNTANT">محاسب</option>
+            <option value="TRAINEE">متدرب</option>
+            <option value="STAFF">موظف</option>
           </select>
         </div>
 

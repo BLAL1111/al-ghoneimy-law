@@ -12,7 +12,7 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      String   @default("LAWYER") // ADMIN, LAWYER, TRAINEE, STAFF
+  role      String   @default("LAWYER") // ADMIN, LAWYER, TRAINEE, STAFF, ACCOUNTANT
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -49,7 +49,7 @@ model Case {
   caseNumber  String    @unique
   court       String?
   subject     String?
-  status      String    @default("OPEN") // OPEN, CLOSED
+  status      String    @default("OPEN")
   clientId    String
   client      Client    @relation(fields: [clientId], references: [id])
   filedDate   DateTime?
@@ -97,10 +97,10 @@ model AuditLog {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  action    String   // CREATE, UPDATE, DELETE
-  entity    String   // Case, Client, Session, Document, User
+  action    String
+  entity    String
   entityId  String
-  changes   String?  // تخزين JSON كـ string
+  changes   String?
   timestamp DateTime @default(now())
   ipAddress String?
   userAgent String?
@@ -111,16 +111,26 @@ model AuditLog {
 }
 
 model Finance {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   date        DateTime
   description String
-  debit       Float    @default(0)  // مدين (مصروف)
-  credit      Float    @default(0)  // دائن (إيراد)
+  debit       Float           @default(0)
+  credit      Float           @default(0)
   notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  attachments FinanceAttachment[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   createdById String
   updatedById String?
-  createdBy   User     @relation("CreatedFinance", fields: [createdById], references: [id])
-  updatedBy   User?    @relation("UpdatedFinance", fields: [updatedById], references: [id])
+  createdBy   User            @relation("CreatedFinance", fields: [createdById], references: [id])
+  updatedBy   User?           @relation("UpdatedFinance", fields: [updatedById], references: [id])
+}
+
+model FinanceAttachment {
+  id        String   @id @default(cuid())
+  financeId String
+  finance   Finance  @relation(fields: [financeId], references: [id], onDelete: Cascade)
+  name      String
+  filePath  String
+  createdAt DateTime @default(now())
 }

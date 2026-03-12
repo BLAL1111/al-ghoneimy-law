@@ -1,16 +1,18 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import {
-  BanknotesIcon,
-  PlusIcon,
-  TrashIcon,
-  PencilIcon,
-  XMarkIcon,
-  CheckIcon,
+  BanknotesIcon, PlusIcon, TrashIcon, PencilIcon,
+  XMarkIcon, CheckIcon, PaperClipIcon, DocumentIcon,
 } from "@heroicons/react/24/outline"
+
+interface Attachment {
+  id: string
+  name: string
+  filePath: string
+}
 
 interface Transaction {
   id: string
@@ -19,6 +21,7 @@ interface Transaction {
   debit: number
   credit: number
   notes?: string
+  attachments: Attachment[]
   createdBy?: { name: string }
 }
 
@@ -29,24 +32,24 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm()
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login")
-    if (status === "authenticated" && session?.user?.role !== "ADMIN") router.push("/")
+    if (status === "authenticated" && !['ADMIN', 'ACCOUNTANT'].includes(session?.user?.role || '')) router.push("/")
   }, [status, session, router])
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role === "ADMIN") {
-      fetchTransactions()
-    }
-  }, [status, session])
+    if (status === "authenticated") fetchTransactions()
+  }, [status])
 
   const fetchTransactions = async () => {
     try {
       const res = await fetch("/api/finance")
       if (res.ok) setTransactions(await res.json())
-    } catch (error) {
+    } catch {
       toast.error("فشل تحميل البيانات")
     } finally {
       setLoading(false)
@@ -97,6 +100,35 @@ export default function FinancePage() {
       }
     } catch {
       toast.error("فشل الحذف")
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, financeId: string) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('financeId', financeId)
+
+    setUploadingFor(financeId)
+    try {
+      const res = await fetch('/api/finance/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      if (res.ok) {
+        toast.success('تم رفع الملف بنجاح')
+        fetchTransactions()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'فشل رفع الملف')
+      }
+    } catch {
+      toast.error('فشل الاتصال بالخادم')
+    } finally {
+      setUploadingFor(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -211,7 +243,7 @@ export default function FinancePage() {
           <h2 className="text-lg font-bold text-gray-800 dark:text-white">كشف الحساب</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[750px]">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 font-semibold">#</th>
@@ -220,13 +252,14 @@ export default function FinancePage() {
                 <th className="px-4 py-3 text-right text-red-600 dark:text-red-400 font-semibold">مدين</th>
                 <th className="px-4 py-3 text-right text-green-600 dark:text-green-400 font-semibold">دائن</th>
                 <th className="px-4 py-3 text-right text-blue-600 dark:text-blue-400 font-semibold">الرصيد</th>
+                <th className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 font-semibold">مرفقات</th>
                 <th className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     لا توجد قيود مالية بعد
                   </td>
                 </tr>
@@ -249,6 +282,29 @@ export default function FinancePage() {
                     </td>
                     <td className={`px-4 py-3 font-bold ${t.runningBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                       {t.runningBalance.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {t.attachments?.map(att => (
+                          <a key={att.id} href={att.filePath} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                            <DocumentIcon className="w-3 h-3" />
+                            <span className="truncate max-w-[80px]">{att.name}</span>
+                          </a>
+                        ))}
+                        <label className={`flex items-center gap-1 text-xs cursor-pointer text-gray-500 hover:text-indigo-600 transition-colors ${uploadingFor === t.id ? 'opacity-50' : ''}`}>
+                          <PaperClipIcon className="w-3 h-3" />
+                          <span>{uploadingFor === t.id ? 'جاري الرفع...' : 'رفع ملف'}</span>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp"
+                            className="hidden"
+                            disabled={uploadingFor === t.id}
+                            onChange={(e) => handleFileUpload(e, t.id)}
+                          />
+                        </label>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
@@ -275,7 +331,7 @@ export default function FinancePage() {
                   <td className={`px-4 py-3 font-bold text-lg ${totalBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                     {totalBalance.toLocaleString()}
                   </td>
-                  <td></td>
+                  <td colSpan={2}></td>
                 </tr>
               </tfoot>
             )}

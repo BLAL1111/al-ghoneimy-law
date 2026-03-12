@@ -6,12 +6,17 @@ import { prisma } from '@/lib/prisma'
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
   if (!session) return res.status(401).json({ error: "غير مصرح" })
-  if (session.user.role !== 'ADMIN') return res.status(403).json({ error: "للمدراء فقط" })
+  if (!['ADMIN', 'ACCOUNTANT'].includes(session.user.role)) {
+    return res.status(403).json({ error: "للمدراء والمحاسبين فقط" })
+  }
 
   if (req.method === "GET") {
     const transactions = await prisma.finance.findMany({
       orderBy: { date: 'asc' },
-      include: { createdBy: { select: { name: true } } }
+      include: {
+        createdBy: { select: { name: true } },
+        attachments: true,
+      }
     })
     return res.json(transactions)
   }
@@ -30,7 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           credit: credit ? parseFloat(credit) : 0,
           notes: notes || null,
           createdById: session.user.id,
-        }
+        },
+        include: { attachments: true }
       })
       return res.json(transaction)
     } catch (error) {
