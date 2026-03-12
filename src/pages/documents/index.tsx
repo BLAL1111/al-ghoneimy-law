@@ -27,13 +27,11 @@ export default function DocumentsPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`هل أنت متأكد من حذف المستند ${name}؟`)) return
-
     try {
       const res = await fetch(`/api/documents/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       })
-
       if (res.ok) {
         toast.success('تم حذف المستند بنجاح')
         fetchDocuments()
@@ -64,56 +62,49 @@ export default function DocumentsPage() {
             {documents.length} مستند
           </span>
         </div>
-        <Link
-          href="/documents/upload"
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-        >
+        <Link href="/documents/upload" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
           <span>+</span>
           <span>رفع مستند</span>
         </Link>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">الملف</th>
-              <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">القضية</th>
-              <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">تاريخ الرفع</th>
-              <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y dark:divide-gray-700">
-            {documents.map((doc: any) => (
-              <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="p-3 flex items-center gap-2 text-gray-800 dark:text-gray-200">
-                  <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  {doc.name}
-                </td>
-                <td className="p-3 text-gray-800 dark:text-gray-200">{doc.case?.caseNumber || "غير مرتبط"}</td>
-                <td className="p-3 text-gray-800 dark:text-gray-200">
-                  {new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}
-                </td>
-                <td className="p-3">
-                  <a
-                    href={doc.filePath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium ml-3"
-                  >
-                    عرض
-                  </a>
-                  <button
-                    onClick={() => handleDelete(doc.id, doc.name)}
-                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
-                  >
-                    <TrashIcon className="w-5 h-5 inline" />
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[650px]">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">الملف</th>
+                <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">القضية</th>
+                <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">تاريخ الرفع</th>
+                <th className="p-3 text-right text-sm font-semibold text-gray-600 dark:text-gray-300">الإجراءات</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y dark:divide-gray-700">
+              {documents.map((doc: any) => (
+                <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="p-3 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                    <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    {doc.name}
+                  </td>
+                  <td className="p-3 text-gray-800 dark:text-gray-200">{doc.case?.caseNumber || "غير مرتبط"}</td>
+                  <td className="p-3 text-gray-800 dark:text-gray-200">
+                    {new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}
+                  </td>
+                  <td className="p-3">
+                    <a href={doc.filePath} target="_blank" rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium ml-3">
+                      عرض
+                    </a>
+                    <button onClick={() => handleDelete(doc.id, doc.name)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium">
+                      <TrashIcon className="w-5 h-5 inline" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
