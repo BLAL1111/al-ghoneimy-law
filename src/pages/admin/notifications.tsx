@@ -66,6 +66,7 @@ export default function NotificationsTest() {
       badge: '/logo.png',
       dir: 'rtl',
       lang: 'ar',
+      // @ts-ignore
       vibrate: [200, 100, 200],
       tag: 'test-notification',
     })
@@ -83,6 +84,7 @@ export default function NotificationsTest() {
       icon: '/logo.png',
       dir: 'rtl',
       lang: 'ar',
+      // @ts-ignore
       vibrate: [200, 100, 200],
       tag: 'session-notification',
     })
