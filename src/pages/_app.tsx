@@ -1,3 +1,4 @@
+import { BanknotesIcon } from '@heroicons/react/24/outline'
 import Head from 'next/head'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
@@ -6,6 +7,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
+  
   
   HomeIcon, 
   BriefcaseIcon, 
@@ -36,6 +38,7 @@ const navigation = [
   { name: 'المستندات', href: '/documents', icon: DocumentTextIcon },
   { name: 'التقارير', href: '/reports', icon: ChartBarIcon },
   { name: 'مساعدة', href: '/help', icon: QuestionMarkCircleIcon },
+  { name: 'النظام المالي', href: '/finance', icon: BanknotesIcon, adminOnly: true },
   { name: 'إدارة المستخدمين', href: '/admin/users', icon: UserGroupIcon, adminOnly: true },
 ]
 
