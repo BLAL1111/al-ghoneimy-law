@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-provider = "postgresql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,15 +16,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  createdCases     Case[]    @relation("CreatedCases")
-  updatedCases     Case[]    @relation("UpdatedCases")
-  createdClients   Client[]  @relation("CreatedClients")
-  updatedClients   Client[]  @relation("UpdatedClients")
-  createdSessions  Session[] @relation("CreatedSessions")
-  updatedSessions  Session[] @relation("UpdatedSessions")
+  createdCases     Case[]     @relation("CreatedCases")
+  updatedCases     Case[]     @relation("UpdatedCases")
+  createdClients   Client[]   @relation("CreatedClients")
+  updatedClients   Client[]   @relation("UpdatedClients")
+  createdSessions  Session[]  @relation("CreatedSessions")
+  updatedSessions  Session[]  @relation("UpdatedSessions")
   createdDocuments Document[] @relation("CreatedDocuments")
   updatedDocuments Document[] @relation("UpdatedDocuments")
   auditLogs        AuditLog[]
+  createdFinance   Finance[]  @relation("CreatedFinance")
+  updatedFinance   Finance[]  @relation("UpdatedFinance")
 }
 
 model Client {
@@ -43,33 +45,33 @@ model Client {
 }
 
 model Case {
-  id          String   @id @default(cuid())
-  caseNumber  String   @unique
+  id          String    @id @default(cuid())
+  caseNumber  String    @unique
   court       String?
   subject     String?
-  status      String   @default("OPEN") // OPEN, CLOSED
+  status      String    @default("OPEN") // OPEN, CLOSED
   clientId    String
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id])
   filedDate   DateTime?
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdById String
   updatedById String?
-  createdBy   User     @relation("CreatedCases", fields: [createdById], references: [id])
-  updatedBy   User?    @relation("UpdatedCases", fields: [updatedById], references: [id])
+  createdBy   User      @relation("CreatedCases", fields: [createdById], references: [id])
+  updatedBy   User?     @relation("UpdatedCases", fields: [updatedById], references: [id])
   sessions    Session[]
   documents   Document[]
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  caseId    String
-  case      Case     @relation(fields: [caseId], references: [id])
-  date      DateTime
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id])
+  date        DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   createdById String
   updatedById String?
   createdBy   User     @relation("CreatedSessions", fields: [createdById], references: [id])
@@ -77,14 +79,14 @@ model Session {
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  caseId    String
-  case      Case     @relation(fields: [caseId], references: [id])
-  name      String
-  filePath  String
-  uploadedAt DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id])
+  name        String
+  filePath    String
+  uploadedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   createdById String
   updatedById String?
   createdBy   User     @relation("CreatedDocuments", fields: [createdById], references: [id])
@@ -106,4 +108,19 @@ model AuditLog {
   @@index([userId])
   @@index([entity])
   @@index([timestamp])
+}
+
+model Finance {
+  id          String   @id @default(cuid())
+  date        DateTime
+  description String
+  debit       Float    @default(0)  // مدين (مصروف)
+  credit      Float    @default(0)  // دائن (إيراد)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  updatedById String?
+  createdBy   User     @relation("CreatedFinance", fields: [createdById], references: [id])
+  updatedBy   User?    @relation("UpdatedFinance", fields: [updatedById], references: [id])
 }
