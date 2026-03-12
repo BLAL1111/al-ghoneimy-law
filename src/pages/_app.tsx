@@ -1,4 +1,3 @@
-import { BanknotesIcon } from '@heroicons/react/24/outline'
 import Head from 'next/head'
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
@@ -6,12 +5,11 @@ import { SessionProvider, useSession } from "next-auth/react"
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Image from 'next/image'
-import { 
-  
-  
-  HomeIcon, 
-  BriefcaseIcon, 
-  UsersIcon, 
+import { useEffect } from 'react'
+import {
+  HomeIcon,
+  BriefcaseIcon,
+  UsersIcon,
   CalendarIcon,
   DocumentTextIcon,
   ChartBarIcon,
@@ -23,7 +21,8 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider, useTheme } from '@/context/ThemeContext'
@@ -55,26 +54,24 @@ function Layout({ children }: { children: React.ReactNode }) {
     await signOut({ redirect: true, callbackUrl: '/login' })
   }
 
-  const filteredNav = navigation.filter(item => 
+  const filteredNav = navigation.filter(item =>
     !item.adminOnly || session?.user?.role === 'ADMIN'
   )
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300" dir="rtl">
-      {/* الشريط الجانبي - مخفي على الجوال ويظهر عند النقر على الأيقونة */}
       <div className={`
         fixed inset-y-0 right-0 z-50 w-72 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out
         lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
       `}>
         <div className="flex flex-col h-full">
-          {/* رأس الشريط باللوجو */}
           <Link href="/" className="p-6 border-b dark:border-gray-700 bg-gradient-to-l from-indigo-50 to-white dark:from-indigo-900 dark:to-gray-800 flex items-center gap-5 hover:shadow-md transition-shadow">
             <div className="relative w-28 h-28 flex-shrink-0 transition-transform duration-300 hover:scale-105">
-              <Image 
-                src="/logo.png" 
-                alt="الغنيمي للمحاماة" 
-                width={112} 
+              <Image
+                src="/logo.png"
+                alt="الغنيمي للمحاماة"
+                width={112}
                 height={112}
                 className="rounded-2xl border-4 border-indigo-100 dark:border-indigo-800 shadow-xl object-cover"
                 priority
@@ -89,8 +86,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-2 font-medium">مكتب محاماة واستشارات قانونية</p>
             </div>
           </Link>
-          
-          {/* زر إغلاق القائمة للجوال */}
+
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden absolute top-4 left-4 p-2 rounded-lg bg-gray-200 dark:bg-gray-700"
@@ -98,7 +94,6 @@ function Layout({ children }: { children: React.ReactNode }) {
             <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
-          {/* قائمة التنقل */}
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {filteredNav.map((item) => {
               const isActive = router.pathname === item.href
@@ -120,7 +115,6 @@ function Layout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* زر تسجيل الخروج */}
           <div className="p-4 border-t dark:border-gray-700">
             <button
               onClick={handleLogout}
@@ -131,22 +125,15 @@ function Layout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
-          {/* زر تبديل الوضع ومعلومات الاتصال */}
           <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <button
               onClick={toggleTheme}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 mb-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               {theme === 'light' ? (
-                <>
-                  <MoonIcon className="w-5 h-5" />
-                  <span>الوضع الليلي</span>
-                </>
+                <><MoonIcon className="w-5 h-5" /><span>الوضع الليلي</span></>
               ) : (
-                <>
-                  <SunIcon className="w-5 h-5" />
-                  <span>الوضع النهاري</span>
-                </>
+                <><SunIcon className="w-5 h-5" /><span>الوضع النهاري</span></>
               )}
             </button>
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -161,29 +148,42 @@ function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* المحتوى الرئيسي */}
       <div className="flex-1 overflow-auto p-4 lg:p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        {/* زر فتح القائمة للجوال */}
         <button
           onClick={() => setSidebarOpen(true)}
           className="lg:hidden fixed top-4 right-4 z-40 p-2 rounded-lg bg-indigo-600 text-white shadow-lg"
         >
           <Bars3Icon className="w-6 h-6" />
         </button>
-
-        {/* إضافة مساحة فارغة في الأعلى للجوال */}
         <div className="lg:hidden h-12"></div>
-        
         {children}
       </div>
     </div>
   )
 }
+
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+  useEffect(() => {
+    // تسجيل الـ Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => console.log('SW registered:', reg.scope))
+        .catch((err) => console.error('SW error:', err))
+    }
+  }, [])
+
   return (
     <>
-      {/* ✅ أضف السطور دي */}
       <Head>
+        <meta name="application-name" content="مكتب الغنيمي للمحاماة" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="الغنيمي" />
+        <meta name="theme-color" content="#4f46e5" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </Head>
@@ -199,4 +199,5 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     </>
   )
 }
+
 export default MyApp
