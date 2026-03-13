@@ -21,6 +21,7 @@
     "@heroicons/react": "^2.1.1",
     "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.99.0",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "formidable": "^3.5.1",
     "next": "^14.2.35",

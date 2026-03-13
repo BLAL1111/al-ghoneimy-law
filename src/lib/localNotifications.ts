@@ -53,7 +53,9 @@ export async function checkAndNotifySessions(userRole?: string) {
         data: { url: '/sessions' },
         // @ts-ignore
         dir: 'rtl',
+        // @ts-ignore
         lang: 'ar',
+        // @ts-ignore
         vibrate: [200, 100, 200],
       })
     }
