@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 
 // دي الـ API اللي هيتنادي من Vercel Cron كل يوم الساعة 8 الصبح
+// وكمان بتدعم إرسال إشعار فوري للكل عن طريق mode=now
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // أمان - تحقق من السر
   const secret = req.headers['x-cron-secret'] || req.query.secret
@@ -13,6 +14,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // ✅ وضع الإرسال الفوري - لو جه mode=now مع title و body
+  const mode = req.query.mode || req.body?.mode
+  if (mode === 'now') {
+    const title = req.query.title as string || req.body?.title
+    const body = req.query.body as string || req.body?.body
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'title و body مطلوبان في وضع now' })
+    }
+
+    const subscriptions = await prisma.pushSubscription.findMany()
+    if (subscriptions.length === 0) {
+      return res.status(200).json({ message: 'مفيش subscriptions', sent: 0 })
+    }
+
+    const webpush = await import('web-push')
+    webpush.default.setVapidDetails(
+      process.env.VAPID_EMAIL || 'mailto:admin@example.com',
+      process.env.VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    )
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      icon: '/logo.png',
+      badge: '/logo.png',
+      url: '/',
+      tag: `manual-${Date.now()}`,
+    })
+
+    let sent = 0
+    let failed = 0
+    const failedEndpoints: string[] = []
+
+    for (const sub of subscriptions) {
+      try {
+        await webpush.default.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payload
+        )
+        sent++
+      } catch (error: any) {
+        failed++
+        if (error.statusCode === 410 || error.statusCode === 404) {
+          failedEndpoints.push(sub.endpoint)
+        }
+      }
+    }
+
+    if (failedEndpoints.length > 0) {
+      await prisma.pushSubscription.deleteMany({
+        where: { endpoint: { in: failedEndpoints } }
+      })
+    }
+
+    return res.status(200).json({ message: 'تم إرسال الإشعار الفوري', sent, failed, total: subscriptions.length })
+  }
+
+  // ✅ الوضع الافتراضي - إشعارات الجلسات (Cron)
   try {
     // ابحث عن الجلسات اللي هتكون بكره
     const tomorrow = new Date()

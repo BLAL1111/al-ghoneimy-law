@@ -27,6 +27,7 @@ const navigation = [
   { name: 'مساعدة', href: '/help', icon: QuestionMarkCircleIcon },
   { name: 'النظام المالي', href: '/finance', icon: BanknotesIcon, roles: ['ADMIN', 'ACCOUNTANT'] },
   { name: 'إدارة المستخدمين', href: '/admin/users', icon: UserGroupIcon, adminOnly: true },
+  { name: 'إرسال إشعار', href: '/admin/notifications', icon: BellIcon, adminOnly: true },
 ]
 
 function urlBase64ToUint8Array(base64String: string) {
