@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghoneimy-law-v1'
+const CACHE_NAME = 'ghoneimy-law-v2'
 const urlsToCache = [
   '/',
   '/cases',
@@ -8,42 +8,44 @@ const urlsToCache = [
   '/offline',
 ]
 
-// تثبيت الـ Service Worker وتخزين الصفحات
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache)
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   )
   self.skipWaiting()
 })
 
-// تفعيل الـ Service Worker وحذف الكاش القديم
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
       )
-    })
+    )
   )
   self.clients.claim()
 })
 
-// استقبال الطلبات - Network First ثم Cache
 self.addEventListener('fetch', (event) => {
+  // تجاهل أي حاجة مش GET (POST, PUT, DELETE...)
+  if (event.request.method !== 'GET') return
+
   // تجاهل طلبات الـ API
   if (event.request.url.includes('/api/')) return
+
+  // تجاهل chrome-extension وغيرها
+  if (!event.request.url.startsWith('http')) return
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const responseClone = response.clone()
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone)
-        })
+        // تأكد إن الـ response صالح قبل ما تحفظه
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone)
+          })
+        }
         return response
       })
       .catch(() => {
@@ -57,7 +59,7 @@ self.addEventListener('fetch', (event) => {
 // استقبال الإشعارات Push
 self.addEventListener('push', (event) => {
   let data = { title: 'مكتب الغنيمي', body: 'لديك إشعار جديد', icon: '/logo.png' }
-  
+
   if (event.data) {
     try {
       data = event.data.json()
@@ -74,7 +76,7 @@ self.addEventListener('push', (event) => {
       dir: 'rtl',
       lang: 'ar',
       vibrate: [200, 100, 200],
-      tag: 'ghoneimy-notification',
+      tag: data.tag || 'ghoneimy-notification',
       data: { url: data.url || '/' }
     })
   )
