@@ -123,8 +123,8 @@ function PushNotificationBanner() {
         body: JSON.stringify({
           endpoint: sub.endpoint,
           keys: {
-            p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')!))),
-            auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')!))),
+            p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('p256dh')!)))),
+            auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('auth')!)))),
           },
         }),
       })
