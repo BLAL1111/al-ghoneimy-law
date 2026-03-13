@@ -114,6 +114,8 @@ export default function EditUser() {
           >
             <option value="LAWYER">محامي</option>
             <option value="ADMIN">مدير</option>
+            <option value="ACCOUNTANT">محاسب</option>
+            <option value="TRAINEE">متدرب</option>
           </select>
         </div>
 

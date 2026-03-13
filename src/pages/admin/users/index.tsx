@@ -74,7 +74,7 @@ export default function AdminUsers() {
                       ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
                       : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                   }`}>
-                    {u.role === 'ADMIN' ? 'مدير' : u.role === 'ACCOUNTANT' ? 'محاسب' : u.role === 'TRAINEE' ? 'متدرب' : 'محامي'}
+                    {u.role === 'ADMIN' ? 'مدير' : u.role === 'ACCOUNTANT' ? 'محاسب' : u.role === 'TRAINEE' ? 'متدرب' : u.role === 'LAWYER' ? 'محامي' : u.role}
                   </span>
                 </td>
                 <td className="p-3">
