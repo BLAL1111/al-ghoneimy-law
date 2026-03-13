@@ -52,8 +52,9 @@ export default function AdminUsers() {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th className="p-3 text-right text-gray-600 dark:text-gray-300">الاسم</th>
@@ -88,6 +89,7 @@ export default function AdminUsers() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

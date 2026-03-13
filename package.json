@@ -28,7 +28,8 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.48.2",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -36,6 +37,7 @@
     "@types/node": "^20.8.0",
     "@types/react": "^18.2.0",
     "@types/react-calendar": "^3.9.0",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
     "prisma": "^5.22.0",

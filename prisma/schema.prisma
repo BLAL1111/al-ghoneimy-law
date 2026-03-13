@@ -27,6 +27,7 @@ model User {
   auditLogs        AuditLog[]
   createdFinance   Finance[]  @relation("CreatedFinance")
   updatedFinance   Finance[]  @relation("UpdatedFinance")
+  pushSubscriptions PushSubscription[]
 }
 
 model Client {
@@ -133,4 +134,16 @@ model FinanceAttachment {
   name      String
   filePath  String
   createdAt DateTime @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

@@ -18,13 +18,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   else if (req.method === "POST") {
     const { name, phone, email, address } = req.body
-    if (!name) {
-      return res.status(400).json({ error: 'الاسم مطلوب' })
+    if (!name) return res.status(400).json({ error: 'الاسم مطلوب' })
+
+    // ✅ منع تكرار الاسم (بغض النظر عن الحروف الكبيرة/الصغيرة والمسافات الزائدة)
+    const normalizedName = name.trim().replace(/\s+/g, ' ')
+    const existing = await prisma.client.findFirst({
+      where: {
+        name: { equals: normalizedName, mode: 'insensitive' }
+      }
+    })
+    if (existing) {
+      return res.status(400).json({ error: `يوجد عميل بنفس الاسم بالفعل: "${existing.name}"` })
     }
+
     try {
       const newClient = await prisma.client.create({
         data: {
-          name,
+          name: normalizedName,
           phone: phone || null,
           email: email || null,
           address: address || null,
@@ -42,7 +52,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  else {
-    return res.status(405).end()
-  }
+  else return res.status(405).end()
 }
