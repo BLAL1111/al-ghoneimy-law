@@ -16,6 +16,7 @@ import { Toaster } from 'react-hot-toast'
 import { ThemeProvider, useTheme } from '@/context/ThemeContext'
 import { signOut } from 'next-auth/react'
 import toast from 'react-hot-toast'
+import { checkAndNotifySessions } from '@/lib/localNotifications'
 
 const navigation = [
   { name: 'الرئيسية', href: '/', icon: HomeIcon },
@@ -173,6 +174,13 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   // إغلاق الـ sidebar عند تغيير الصفحة
   useEffect(() => { setSidebarOpen(false) }, [router.pathname])
+
+  // تحقق من الجلسات القادمة وابعت إشعار محلي (ADMIN, LAWYER, TRAINEE فقط)
+  useEffect(() => {
+    if (session?.user) {
+      setTimeout(() => checkAndNotifySessions(session.user.role), 3000)
+    }
+  }, [session?.user])
 
   if (isLoginPage) return <>{children}</>
 

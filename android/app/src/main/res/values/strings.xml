@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">الغنيمي للمحاماة</string>
+    <string name="title_activity_main">الغنيمي للمحاماة</string>
+    <string name="package_name">com.elghoneimy.lawyer</string>
+    <string name="custom_url_scheme">com.elghoneimy.lawyer</string>
+</resources>
