@@ -84,6 +84,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         req
       )
 
+      // امسح البيانات المرتبطة أولاً
+      await prisma.auditLog.deleteMany({ where: { userId: id } })
+      await prisma.pushSubscription.deleteMany({ where: { userId: id } })
+
       await prisma.user.delete({ where: { id } })
       return res.status(204).end()
     } catch (error) {
