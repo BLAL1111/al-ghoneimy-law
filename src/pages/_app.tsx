@@ -16,7 +16,7 @@ import { Toaster } from 'react-hot-toast'
 import { ThemeProvider, useTheme } from '@/context/ThemeContext'
 import { signOut } from 'next-auth/react'
 import toast from 'react-hot-toast'
-import { checkAndNotifySessions } from '@/lib/localNotifications'
+import { scheduleSessionNotifications } from '@/lib/localNotifications'
 
 const navigation = [
   { name: 'الرئيسية', href: '/', icon: HomeIcon },
@@ -178,7 +178,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   // تحقق من الجلسات القادمة وابعت إشعار محلي (ADMIN, LAWYER, TRAINEE فقط)
   useEffect(() => {
     if (session?.user) {
-      setTimeout(() => checkAndNotifySessions(session.user.role), 3000)
+      setTimeout(() => scheduleSessionNotifications(), 3000)
     }
   }, [session?.user])
 
